@@ -2,206 +2,249 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>LanguageHarness</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>会話 · LanguageHarness</title>
+  <meta name="description" content="Japanese conversation practice">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="会話">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#f6f4ef" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#171614" media="(prefers-color-scheme: dark)">
+  <meta name="format-detection" content="telephone=no">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32.png">
   <link rel="stylesheet" href="/static/style.css">
 </head>
-<body>
-<header class="top">
-  <a class="brand" href="#" data-nav="setup">LanguageHarness <span>会話練習</span></a>
-  <nav>
-    <button class="ghost" data-nav="history">履歴 History</button>
-    <button class="ghost" id="open-settings">設定 Settings</button>
-  </nav>
-</header>
+<body data-view="setup">
+
+<nav class="tabbar" id="tabbar">
+  <div class="brand">LanguageHarness <span>会話練習</span></div>
+  <a href="#setup" data-tab="setup">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>新しい会話</span>
+  </a>
+  <a href="#history" data-tab="history">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg><span>履歴</span>
+  </a>
+  <a href="#settings" data-tab="settings">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg><span>設定</span>
+  </a>
+</nav>
 
 <main>
   <!-- SETUP -->
   <section id="view-setup" class="view">
-    <div class="card narrow">
-      <h1>新しい会話 <small>New conversation</small></h1>
-      <form id="setup-form">
+    <div class="page">
+      <h1 class="page-title">新しい会話 <small>New conversation</small></h1>
+      <div id="continue-card" hidden></div>
+      <form id="setup-form" class="card">
         <label>トピック Topic
-          <input name="topic" required placeholder="例: 日本のラーメン文化 / my trip to Kyoto / AI news" autocomplete="off">
+          <input name="topic" required placeholder="例: 日本のラーメン文化 / 京都旅行 / AI news" autocomplete="off" enterkeyhint="next">
         </label>
         <label>場面・役柄 Scenario <small>(optional)</small>
-          <input name="scenario" placeholder="例: 居酒屋で同僚と / 店員と客 / job interview" autocomplete="off">
+          <input name="scenario" placeholder="例: 居酒屋で同僚と / 店員と客" autocomplete="off" enterkeyhint="done">
         </label>
         <div class="row">
           <label>レベル Level
             <select name="level">
-              <option value="beginner (JLPT N5–N4)">初級 Beginner (N5–N4)</option>
-              <option value="intermediate (JLPT N3)" selected>中級 Intermediate (N3)</option>
-              <option value="upper-intermediate (JLPT N2)">中上級 Upper-int. (N2)</option>
-              <option value="advanced (JLPT N1)">上級 Advanced (N1)</option>
+              <option value="beginner (JLPT N5–N4)">初級 (N5–N4)</option>
+              <option value="intermediate (JLPT N3)" selected>中級 (N3)</option>
+              <option value="upper-intermediate (JLPT N2)">中上級 (N2)</option>
+              <option value="advanced (JLPT N1)">上級 (N1)</option>
             </select>
           </label>
           <label>話し方 Register
             <select name="politeness">
               <option value="polite">です・ます</option>
-              <option value="casual">タメ口 casual</option>
+              <option value="casual">タメ口</option>
             </select>
           </label>
         </div>
 
-        <fieldset>
-          <legend>終わり方 How it ends</legend>
-          <div class="seg" id="mode-seg">
-            <label><input type="radio" name="mode" value="turns" checked><span>ターン数 Turns</span></label>
-            <label><input type="radio" name="mode" value="time"><span>時間 Time</span></label>
-            <label><input type="radio" name="mode" value="goal"><span>ゴール Goal</span></label>
+        <div class="group">
+          <div class="group-label">終わり方 How it ends</div>
+          <div class="seg">
+            <label><input type="radio" name="mode" value="turns" checked><span>ターン</span></label>
+            <label><input type="radio" name="mode" value="time"><span>時間</span></label>
+            <label><input type="radio" name="mode" value="goal"><span>ゴール</span></label>
           </div>
           <div class="mode-opt" data-mode="turns">
             <div class="chips" data-target="budget_turns">
               <button type="button" data-v="8">8</button><button type="button" data-v="12">12</button>
               <button type="button" data-v="15" class="on">15</button><button type="button" data-v="20">20</button><button type="button" data-v="30">30</button>
             </div>
-            <label class="inline">exchanges <input type="number" name="budget_turns" value="15" min="2" max="100"></label>
+            <label class="inline">exchanges <input type="number" inputmode="numeric" name="budget_turns" value="15" min="2" max="100"></label>
           </div>
           <div class="mode-opt" data-mode="time" hidden>
             <div class="chips" data-target="budget_minutes">
               <button type="button" data-v="5">5</button><button type="button" data-v="10">10</button>
               <button type="button" data-v="15" class="on">15</button><button type="button" data-v="20">20</button><button type="button" data-v="30">30</button>
             </div>
-            <label class="inline">minutes <input type="number" name="budget_minutes" value="15" min="1" max="120"></label>
+            <label class="inline">minutes <input type="number" inputmode="numeric" name="budget_minutes" value="15" min="1" max="120"></label>
           </div>
           <div class="mode-opt" data-mode="goal" hidden>
             <label>ゴール Goal
-              <input name="goal" placeholder="例: 店員に質問してラーメンを注文する / explain your opinion on remote work">
+              <input name="goal" placeholder="例: 店員に質問してラーメンを注文する">
             </label>
-            <label class="inline">hard cap <input type="number" name="goal_max_turns" value="25" min="4" max="100"> exchanges</label>
+            <label class="inline">hard cap <input type="number" inputmode="numeric" name="goal_max_turns" value="25" min="4" max="100"> exchanges</label>
           </div>
-        </fieldset>
-
-        <div class="row checks">
-          <label class="inline"><input type="checkbox" name="use_research" checked> ウェブで下調べ Research topic</label>
-          <label class="inline"><input type="checkbox" name="use_anki" checked> Ankiの単語を使う Use my Anki</label>
         </div>
+
+        <label class="switch"><span>ウェブで下調べ <small>Research the topic</small></span><input type="checkbox" name="use_research" checked><i></i></label>
+        <label class="switch"><span>Ankiの単語を使う <small>Use my Anki words</small></span><input type="checkbox" name="use_anki" checked><i></i></label>
         <p class="hint" id="setup-hint"></p>
-        <button class="primary big" type="submit">準備する Prepare →</button>
+        <button class="primary big" type="submit">準備する Prepare</button>
       </form>
     </div>
   </section>
 
   <!-- PREP / READY -->
   <section id="view-prep" class="view" hidden>
-    <div class="card narrow">
-      <h1 id="prep-title">準備中… <small>Preparing</small></h1>
-      <ul id="prep-log" class="log"></ul>
-      <div id="prep-ready" hidden>
-        <details open><summary>話題の資料 Brief</summary><div id="prep-brief"></div></details>
-        <details open><summary>ターゲット語彙 Target words <span id="prep-tcount"></span></summary><div id="prep-targets" class="tchips"></div></details>
-        <button class="primary big" id="start-btn">会話を始める Start →</button>
+    <div class="page">
+      <h1 class="page-title" id="prep-title">準備中…</h1>
+      <div class="card">
+        <ul id="prep-log" class="log"></ul>
+        <div id="prep-ready" hidden>
+          <details open><summary>話題の資料 Brief</summary><div id="prep-brief"></div></details>
+          <details open><summary>ターゲット語彙 Target words <span id="prep-tcount"></span></summary><div id="prep-targets" class="tchips"></div></details>
+          <button class="primary big" id="start-btn">会話を始める Start</button>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- CHAT -->
-  <section id="view-chat" class="view chat-layout" hidden>
-    <div class="chat-main">
+  <section id="view-chat" class="view chat-view" hidden>
+    <header class="chat-head">
+      <a class="icon-btn" href="#history" aria-label="Back">
+        <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+      </a>
+      <div class="chat-title">
+        <div id="chat-topic" class="ellipsis"></div>
+        <div class="meta"><span id="phase-label" class="phase">opening</span><span id="budget-label"></span></div>
+      </div>
+      <button class="pill-btn" id="sheet-btn" type="button">語彙 <span id="tcount"></span></button>
+    </header>
+    <div class="bar"><div id="bar-fill"></div></div>
+    <div class="chat-body">
       <div id="chat-log"></div>
-      <form id="chat-form">
-        <textarea id="chat-input" rows="2" placeholder="日本語で書いてください… (Enter で送信 / Shift+Enter 改行)"></textarea>
-        <div class="chat-actions">
-          <button class="primary" type="submit" id="send-btn">送信</button>
-          <button class="ghost danger" type="button" id="end-btn" title="Ask the partner to wrap up now">終了 End</button>
+      <div class="sheet-backdrop" id="sheet-backdrop"></div>
+      <aside class="chat-side" id="chat-side">
+        <div class="sheet-grip"></div>
+        <div class="panel" id="goal-panel" hidden>
+          <h3>ゴール</h3><p id="goal-text"></p><ul id="checkpoints" class="checklist"></ul>
         </div>
-      </form>
-      <div id="ended-bar" hidden>
-        会話が終わりました。 <button class="primary" id="review-btn">振り返り Review →</button>
-      </div>
+        <div class="panel">
+          <h3>ターゲット語彙</h3>
+          <div id="targets" class="tchips"></div>
+          <p class="hint" id="anki-note"></p>
+        </div>
+        <div class="panel">
+          <details><summary>話題の資料 Brief</summary><div id="side-brief"></div></details>
+        </div>
+        <div class="panel">
+          <label class="switch"><span>訂正を表示 <small>Show corrections</small></span><input type="checkbox" id="show-corr" checked><i></i></label>
+        </div>
+        <button class="ghost danger wide-btn" type="button" id="end-btn">会話を終える End conversation</button>
+      </aside>
     </div>
-    <aside class="chat-side">
-      <div class="panel">
-        <div class="phase-row"><span id="phase-label" class="phase">opening</span><span id="budget-label"></span></div>
-        <div class="bar"><div id="bar-fill"></div></div>
-      </div>
-      <div class="panel" id="goal-panel" hidden>
-        <h3>ゴール</h3><p id="goal-text"></p><ul id="checkpoints" class="checklist"></ul>
-      </div>
-      <div class="panel">
-        <h3>ターゲット語彙 <span id="tcount"></span></h3>
-        <div id="targets" class="tchips"></div>
-        <p class="hint" id="anki-note"></p>
-      </div>
-      <div class="panel">
-        <details><summary>話題の資料 Brief</summary><div id="side-brief"></div></details>
-      </div>
-      <label class="inline toggle"><input type="checkbox" id="show-corr" checked> 訂正を表示 Show corrections</label>
-    </aside>
+    <form id="chat-form" class="composer">
+      <textarea id="chat-input" rows="1" placeholder="日本語で…" enterkeyhint="send"></textarea>
+      <button class="send" type="submit" id="send-btn" aria-label="送信">
+        <svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+      </button>
+    </form>
+    <div id="ended-bar" class="composer ended" hidden>
+      <span>会話が終わりました</span> <button class="primary" id="review-btn" type="button">振り返り Review</button>
+    </div>
   </section>
 
   <!-- REVIEW -->
   <section id="view-review" class="view" hidden>
-    <div class="card wide" id="review-body"></div>
+    <div class="page" id="review-body"></div>
   </section>
 
   <!-- HISTORY -->
   <section id="view-history" class="view" hidden>
-    <div class="card narrow"><h1>履歴 <small>History</small></h1><ul id="history-list" class="history"></ul></div>
+    <div class="page">
+      <h1 class="page-title">履歴 <small>History</small></h1>
+      <ul id="history-list" class="history"></ul>
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="view-settings" class="view" hidden>
+    <div class="page">
+      <h1 class="page-title">設定 <small>Settings</small></h1>
+      <form id="settings-form" onsubmit="return false">
+        <div class="card">
+          <h3>Models</h3>
+          <div class="row">
+            <label>Partner provider <select data-k="partner.provider" class="prov"></select></label>
+            <label>Partner model <select data-k="partner.model" class="model-sel"></select></label>
+          </div>
+          <div class="row">
+            <label>Utility provider <select data-k="utility.provider" class="prov"></select></label>
+            <label>Utility model <select data-k="utility.model" class="model-sel"></select></label>
+          </div>
+          <p class="hint">Partner = the conversation. Utility = brief, corrections, word picking and review. The utility model can be cheaper, but it must be good at Japanese.</p>
+        </div>
+
+        <div class="card">
+          <h3>ChatGPT subscription</h3>
+          <p id="chatgpt-status" class="hint"></p>
+          <div class="row" id="chatgpt-actions">
+            <button type="button" id="chatgpt-login">Sign in</button>
+            <button type="button" class="ghost" id="chatgpt-logout">Sign out</button>
+          </div>
+          <p class="hint" id="chatgpt-remote" hidden>Sign-in has to be done in a browser on the server machine (the login returns to 127.0.0.1 there).</p>
+        </div>
+
+        <div class="card">
+          <h3>OpenAI API</h3>
+          <label>API key <input type="password" id="secret-OPENAI_API_KEY" autocomplete="off"></label>
+          <label>Base URL <small>(blank = official)</small> <input data-k="openai_base_url" placeholder="https://…/v1" autocapitalize="off"></label>
+          <label>API style <select data-k="openai_api_style"><option>auto</option><option>responses</option><option>chat</option></select></label>
+        </div>
+
+        <div class="card">
+          <h3>Ollama</h3>
+          <label>Base URL <input data-k="ollama_base_url" autocapitalize="off"></label>
+          <label>Context window (num_ctx) <input type="number" inputmode="numeric" data-k="ollama_num_ctx" min="2048" step="1024"></label>
+        </div>
+
+        <div class="card">
+          <h3>Research (Tavily)</h3>
+          <label>Tavily API key <input type="password" id="secret-TAVILY_API_KEY" autocomplete="off"></label>
+          <label>Results per query <input type="number" inputmode="numeric" data-k="tavily_max_results" min="1" max="10"></label>
+        </div>
+
+        <div class="card">
+          <h3>Anki</h3>
+          <label>Source <select data-k="anki.source"><option value="auto">auto (AnkiConnect → file)</option><option value="ankiconnect">AnkiConnect only</option><option value="sqlite">collection file only</option></select></label>
+          <label>AnkiConnect URL <input data-k="anki.ankiconnect_url" autocapitalize="off"></label>
+          <label>collection.anki2 path <small>(blank = auto-detect)</small> <input data-k="anki.collection_path" list="collections" autocapitalize="off"></label>
+          <datalist id="collections"></datalist>
+          <div class="row">
+            <label>Target words <input type="number" inputmode="numeric" data-k="anki.target_count" min="0" max="80"></label>
+            <label>Candidates <input type="number" inputmode="numeric" data-k="anki.candidate_limit" min="20" max="1000"></label>
+          </div>
+          <button type="button" id="anki-load" class="wide-btn">Load decks & note types</button>
+          <p id="anki-status" class="hint"></p>
+          <div id="anki-decks" class="decklist"></div>
+          <div id="anki-types"></div>
+        </div>
+
+        <div class="save-bar">
+          <button type="button" class="primary big" id="settings-save">保存 Save</button>
+        </div>
+      </form>
+    </div>
   </section>
 </main>
 
-<!-- SETTINGS -->
-<dialog id="settings">
-  <form method="dialog" id="settings-form">
-    <h2>設定 Settings</h2>
-
-    <h3>Models</h3>
-    <div class="row">
-      <label>Partner provider <select data-k="partner.provider" class="prov"></select></label>
-      <label>Partner model <select data-k="partner.model" class="model-sel"></select></label>
-    </div>
-    <div class="row">
-      <label>Utility provider <select data-k="utility.provider" class="prov"></select></label>
-      <label>Utility model <select data-k="utility.model" class="model-sel"></select></label>
-    </div>
-        <p class="hint">Partner = the conversation. Utility = research brief, corrections, word picking and review (structured JSON). The utility model can be smaller or cheaper, but it needs to be good at Japanese.</p>
-
-    <h3>Ollama</h3>
-    <div class="row">
-      <label>Base URL <input data-k="ollama_base_url"></label>
-      <label>Context window (num_ctx) <input type="number" data-k="ollama_num_ctx" min="2048" step="1024"></label>
-    </div>
-
-    <h3>OpenAI</h3>
-    <div class="row">
-      <label>API key <input type="password" id="secret-OPENAI_API_KEY" placeholder="sk-… (leave empty to keep)"></label>
-      <label>Base URL <small>(blank = official)</small> <input data-k="openai_base_url" placeholder="https://…/v1"></label>
-    </div>
-    <label>API style <select data-k="openai_api_style"><option>auto</option><option>responses</option><option>chat</option></select></label>
-
-    <h3>ChatGPT subscription</h3>
-    <div class="row"><span id="chatgpt-status" class="hint"></span>
-      <button type="button" id="chatgpt-login">Sign in</button><button type="button" class="ghost" id="chatgpt-logout">Sign out</button></div>
-
-    <h3>Research (Tavily)</h3>
-    <div class="row">
-      <label>Tavily API key <input type="password" id="secret-TAVILY_API_KEY" placeholder="tvly-… (leave empty to keep)"></label>
-      <label>Results per query <input type="number" data-k="tavily_max_results" min="1" max="10"></label>
-    </div>
-
-    <h3>Anki</h3>
-    <div class="row">
-      <label>Source <select data-k="anki.source"><option value="auto">auto (AnkiConnect → file)</option><option value="ankiconnect">AnkiConnect only</option><option value="sqlite">collection file only</option></select></label>
-      <label>AnkiConnect URL <input data-k="anki.ankiconnect_url"></label>
-    </div>
-    <label>collection.anki2 path <small>(blank = auto-detect)</small> <input data-k="anki.collection_path" list="collections"></label>
-    <datalist id="collections"></datalist>
-    <div class="row">
-      <label>Target words per session <input type="number" data-k="anki.target_count" min="0" max="80"></label>
-      <label>Candidates sent to model <input type="number" data-k="anki.candidate_limit" min="20" max="1000"></label>
-    </div>
-    <div class="row"><button type="button" id="anki-load">Load decks & note types</button><span id="anki-status" class="hint"></span></div>
-    <div id="anki-decks" class="decklist"></div>
-    <div id="anki-types"></div>
-
-    <div class="dialog-actions">
-      <button value="cancel" class="ghost">Cancel</button>
-      <button type="button" class="primary" id="settings-save">Save</button>
-    </div>
-  </form>
-</dialog>
+<div id="toast" role="status" aria-live="polite"></div>
 
 <script src="/static/app.js"></script>
 </body>

@@ -1,6 +1,7 @@
 """FastAPI app: JSON API + SSE streams + static UI."""
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import threading
@@ -23,9 +24,30 @@ app = FastAPI(title="LanguageHarness")
 app.mount("/static", StaticFiles(directory=config.STATIC_DIR), name="static")
 
 
+@app.middleware("http")
+async def no_cache_shell(request, call_next):
+    """The app shell must revalidate so a deploy shows up immediately (the service worker handles offline)."""
+    resp = await call_next(request)
+    p = request.url.path
+    if p == "/" or p.startswith("/static/") or p in ("/sw.js", "/manifest.webmanifest"):
+        resp.headers["Cache-Control"] = "no-cache"
+    return resp
+
+
 @app.get("/")
 def index():
     return FileResponse(config.STATIC_DIR / "index.html")
+
+
+@app.get("/sw.js")
+def service_worker():
+    # served from the root so its scope covers the whole app
+    return FileResponse(config.STATIC_DIR / "sw.js", media_type="text/javascript", headers={"Service-Worker-Allowed": "/"})
+
+
+@app.get("/manifest.webmanifest")
+def manifest():
+    return FileResponse(config.STATIC_DIR / "manifest.webmanifest", media_type="application/manifest+json")
 
 
 # --- settings & secrets -----------------------------------------------------------
@@ -161,7 +183,7 @@ def create_session(body: SessionIn):
 @app.get("/api/sessions/{sid}")
 def get_session(sid: str):
     s = _load(sid)
-    return {"session": s.model_dump(), "state": sess.public_state(s)}
+    return {"session": s.model_dump(), "state": sess.public_state(s), "busy": sess.lock_for(sid).locked()}
 
 
 @app.delete("/api/sessions/{sid}")
@@ -171,22 +193,42 @@ def delete_session(sid: str):
     return {"ok": True}
 
 
+_background: set[asyncio.Task] = set()
+
+
 def _sse(sid: str, make: callable) -> StreamingResponse:
-    """Run a session generator under the session lock; state is only saved by the generator on success."""
+    """Run a session generator under the session lock and stream its events.
+
+    The generator runs in a background task that outlives the HTTP response, so if the
+    client disconnects mid-reply (e.g. iOS suspends the app) the turn still completes and
+    is saved. State is only saved by the generator on success.
+    """
 
     async def gen() -> AsyncIterator[bytes]:
         lock = sess.lock_for(sid)
         if lock.locked():
             yield _ev("error", {"message": "Busy: a reply is already being generated."})
             return
-        async with lock:
-            s = _load(sid)  # fresh copy; failures leave the saved session untouched
+        await lock.acquire()  # uncontended: returns without yielding, so no race with the check above
+        queue: asyncio.Queue = asyncio.Queue()
+
+        async def worker():
             try:
+                s = _load(sid)  # fresh copy; failures leave the saved session untouched
                 async for ev in make(s):
-                    yield _ev(ev["event"], ev["data"])
-                yield _ev("done", {})
+                    queue.put_nowait(_ev(ev["event"], ev["data"]))
+                queue.put_nowait(_ev("done", {}))
             except Exception as e:  # noqa: BLE001
-                yield _ev("error", {"message": str(e)})
+                queue.put_nowait(_ev("error", {"message": getattr(e, "detail", None) or str(e)}))
+            finally:
+                lock.release()
+                queue.put_nowait(None)
+
+        task = asyncio.create_task(worker())
+        _background.add(task)
+        task.add_done_callback(_background.discard)
+        while (item := await queue.get()) is not None:
+            yield item
 
     return StreamingResponse(gen(), media_type="text/event-stream", headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 

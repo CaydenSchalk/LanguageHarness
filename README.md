@@ -26,6 +26,14 @@ Then open **Settings**:
    - **AnkiConnect** (Anki open with add-on `2055492159`) gives live data and allows adding new cards.
    - Otherwise it falls back to reading a temporary copy of `collection.anki2` (Flatpak and standard paths are auto-detected). It never writes to your collection.
 
+## On your phone
+
+The UI is a home-screen web app: a bottom tab bar, a full-screen chat, and a bottom sheet for target words and the brief. Open the HTTPS address in Safari, tap **Share**, then **Add to Home Screen**. It runs full screen. If you switch apps in the middle of a reply, the server still finishes the turn, and the reply appears when you come back.
+
+ChatGPT sign-in has to be done in a browser on the server machine, because the login returns to `127.0.0.1` there.
+
+To deploy to the Raspberry Pi, run `scripts/deploy-pi.sh`. It copies the code, reinstalls it into the Pi's venv and restarts `languageharness.service`. It doesn't touch the Pi's `data/` or `anki/` folders.
+
 ## Data
 
 Everything is plain files under `data/` (override with `LH_DATA_DIR`), and the folder is gitignored:
